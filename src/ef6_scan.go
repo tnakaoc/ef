@@ -46,17 +46,48 @@ func parsev(str string) []float64{
 }
 func main(){
 	if len(os.Args) == 1 {
-		fmt.Println("usage : ",os.Args[0]," [filename]");
+		fmt.Println("usage : ",os.Args[0]," [filename] ([output])");
 		return
 	}
 	file,err := os.Open(os.Args[1])
 	if err != nil {
-		fmt.Println("file open error.")
+		fmt.Println("input file open error.")
 		log.Fatal(err)
 		return
 	}
 	defer file.Close()
+	fmt.Println("ef6_scan")
+	ofn := func() string{
+		if len(os.Args) == 2 {
+			return "scan.dat"
+		}
+		return os.Args[2]
+	}()
+	ofs,err := os.Create(ofn)
+	if err != nil {
+		fmt.Println("output file open error.")
+		ofs,err = os.Create("/dev/stdout")
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
+	}
+	defer ofs.Close()
 	scanner := bufio.NewScanner(file)
+	is_ef6 := func() bool {
+		for i:=0;i<20;i++ {
+			scanner.Scan()
+			if strings.Contains(scanner.Text(),"------ENDF-6 FORMAT") {
+				return true
+			}
+		}
+		return false
+	}()
+	if !is_ef6 {
+		fmt.Println("This file may not a ENDF-6 format file")
+		fmt.Println("exit")
+		return
+	}
 	for scanner.Scan() {
 		vals := parsev(scanner.Text())
 		mf:=int(vals[7])
@@ -69,7 +100,7 @@ func main(){
 				for i:=0;i<numE;i++ {
 					scanner.Scan()
 					resdata := parsev(scanner.Text())
-					fmt.Printf("%e\t%e\t%e\t%e\t%e\n",resdata[0],pari*resdata[1],resdata[2],resdata[3],resdata[4])
+					fmt.Fprintf(ofs,"%e\t%e\t%e\t%e\t%e\n",resdata[0],pari*resdata[1],resdata[2],resdata[3],resdata[4])
 				}
 				scanner.Scan()
 				vals =parsev(scanner.Text())
@@ -83,7 +114,7 @@ func main(){
 				for i:=0;i<numE;i++ {
 					scanner.Scan()
 					resdata := parsev(scanner.Text())
-					fmt.Printf("%e\t%e\t%e\t%e\t%e\n",resdata[0],pari*resdata[1],resdata[2],resdata[3],resdata[4])
+					fmt.Fprintf(ofs,"%e\t%e\t%e\t%e\t%e\n",resdata[0],pari*resdata[1],resdata[2],resdata[3],resdata[4])
 				}
 				break
 			}
