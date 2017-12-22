@@ -56,7 +56,6 @@ func main(){
 		return
 	}
 	defer file.Close()
-	fmt.Println("ef6_scan")
 	ofn := func() string{
 		if len(os.Args) == 2 {
 			return "scan.dat"

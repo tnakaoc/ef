@@ -39,9 +39,10 @@ func main(){
 			fmt.Println("trying to download from: ",path)
 			exec.Command("wget",path).Run()
 			exec.Command("mv",elem[le-1],"tmp.download").Run()
-//			getURL(path,"tmp.download")
-			fmt.Println("trying to scan.")
+			fmt.Println("Done.")
+			fmt.Println("scanning.")
 			exec.Command("./ef6_scan","tmp.download","scan/"+elem[le-2]+elem[le-1]+".scan").Run()
+			fmt.Println("Done.")
 		}
 	}
 }
